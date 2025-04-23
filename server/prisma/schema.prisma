@@ -1,0 +1,43 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String          @id @default(uuid())
+  email        String          @unique
+  password     String
+  publicKey    String          @map("public_key")
+  createdAt    DateTime        @default(now()) @map("created_at")
+  updatedAt    DateTime        @updatedAt @map("updated_at")
+  encryptedFiles EncryptedFile[]
+
+  @@map("users")
+}
+
+model EncryptedFile {
+  id           String   @id @default(uuid())
+  fileName     String   @map("file_name")
+  fileType     String   @map("file_type")
+  s3Key        String   @map("s3_key")
+  encryptedKey String   @map("encrypted_key")
+  iv           String
+  hash         String
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  userId       String   @map("user_id")
+  user         User     @relation(fields: [userId], references: [id])
+
+  @@map("encrypted_files")
+}
